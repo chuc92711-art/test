@@ -30,8 +30,25 @@
         h1 {
             text-align: center;
             color: #1a3d1a;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             font-size: 28px;
+        }
+        /* 新增中煤三建统计标题栏 */
+        .zhongmei-stat-bar {
+            background: #e8f4ff;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            border: 1px solid #9fc5e8;
+        }
+        .zhongmei-stat-bar span {
+            color: #c0392b;
+            font-size: 18px;
+            margin: 0 5px;
         }
         .top-bar {
             display: flex;
@@ -58,7 +75,6 @@
         .export-btn {background: #e67e22;}
         .clear-btn {background: #c0392b;}
         .query-btn {background:#34495e;}
-
         .filter-box {
             margin-left: auto;
             display: flex;
@@ -118,7 +134,6 @@
         .team-select-dropdown label:hover {
             background: #f0f0f0;
         }
-
         .tab-nav {
             display: flex;
             flex-wrap: wrap;
@@ -145,7 +160,6 @@
         .tab5 {background: #16a085;}
         .tab6 {background: #d35400;}
         .tab7 {background: #2c3e50;}
-
         .tab-content {
             display: none;
             padding: 20px;
@@ -157,7 +171,6 @@
         .tab-content.active {
             display: block;
         }
-
         .stat-info {
             background: #d1f7d1;
             padding: 15px;
@@ -185,7 +198,6 @@
             font-weight: bold;
             font-size: 16px;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -236,7 +248,6 @@
             background: #999;
             cursor: not-allowed;
         }
-
         @media print {
             body {background: #fff;}
             .main-wrap {background: #fff; background-image: none; box-shadow: none;}
@@ -250,6 +261,13 @@
 <body>
     <div class="main-wrap">
         <h1>三违综合统计管理系统（矿查日报专项统计）</h1>
+        <!-- 新增中煤三建人数统计标题栏 -->
+        <div class="zhongmei-stat-bar">
+            中煤三建三违人数统计：
+            典型三违<span id="zmTypicalCount">0</span>人 |
+            较严重三违<span id="zmSeriousCount">0</span>人 |
+            危险作业<span id="zmDangerCount">0</span>人
+        </div>
         <div class="top-bar">
             <label class="btn upload-btn">
                 批量上传Excel表格
@@ -258,7 +276,6 @@
             <button class="btn print-btn" onclick="window.print()">打印全部内容</button>
             <button class="btn export-btn" onclick="exportCurrentTable()">导出当前表格</button>
             <button class="btn clear-btn" onclick="clearAllData()">清空所有数据</button>
-
             <div class="filter-box">
                 <div class="team-select-wrap">
                     <div class="team-select-btn" id="teamSelectBtn">全部队伍</div>
@@ -277,7 +294,6 @@
                 <button class="btn query-btn" onclick="refreshAllData()">查询筛选</button>
             </div>
         </div>
-
         <div class="tab-nav">
             <div class="tab-item tab1 active" data-tab="daily">每日三违明细</div>
             <div class="tab-item tab2" data-tab="week">每周汇总</div>
@@ -287,7 +303,6 @@
             <div class="tab-item tab6" data-tab="monthCompare">矿&中煤月度对比</div>
             <div class="tab-item tab7" data-tab="totalSummary">综合汇总表</div>
         </div>
-
         <div class="tab-content active" id="daily">
             <div class="stat-info" id="dailyStat"></div>
             <div class="daily-stat" id="dailyMineStat"></div>
@@ -318,7 +333,6 @@
             </table>
             <div class="page-box" id="dailyPage"></div>
         </div>
-
         <div class="tab-content" id="week">
             <div class="stat-info" id="weekStat"></div>
             <table>
@@ -335,7 +349,6 @@
                 <tbody id="weekBody"></tbody>
             </table>
         </div>
-
         <div class="tab-content" id="month">
             <div class="stat-info" id="monthStat"></div>
             <table>
@@ -352,7 +365,6 @@
                 <tbody id="monthBody"></tbody>
             </table>
         </div>
-
         <div class="tab-content" id="quarter">
             <div class="stat-info" id="quarterStat"></div>
             <table>
@@ -369,7 +381,6 @@
                 <tbody id="quarterBody"></tbody>
             </table>
         </div>
-
         <div class="tab-content" id="year">
             <div class="stat-info" id="yearStat"></div>
             <table>
@@ -386,7 +397,6 @@
                 <tbody id="yearBody"></tbody>
             </table>
         </div>
-
         <div class="tab-content" id="monthCompare">
             <div class="stat-info" id="compareStat"></div>
             <table>
@@ -405,7 +415,6 @@
                 <tbody id="compareBody"></tbody>
             </table>
         </div>
-
         <div class="tab-content" id="totalSummary">
             <div class="stat-info" id="summaryStat"></div>
             <table>
@@ -424,14 +433,12 @@
             </table>
         </div>
     </div>
-
     <script>
         const TEAM_LIST = ["711队", "712队", "715队", "716队"];
         const PAGE_SIZE = 15;
         let allOriginData = [];
         let pageIndex = {daily: 1};
         let selectedTeams = [...TEAM_LIST];
-
         function formatText(str) {
             if (!str) return "";
             return String(str).trim().replace(/\s+/g, "");
@@ -478,18 +485,36 @@
             let dt = new Date(d);
             return isNaN(dt.getTime()) ? "未知年份" : String(dt.getFullYear());
         }
-
-        // 【核心修复】矿查三违 = 所有有效数据，和每日明细总数完全同步
         function isMineDailyReport(item) {
-            return true; // 所有数据都计入矿查三违
+            return true;
         }
-        // 中煤三建单独统计逻辑不变
         function isZhongmeiReport(item) {
             const unit = formatText(item.单位);
             return unit.includes("中煤三建");
         }
-
-        // 全局统计
+        // 新增：统计中煤三建各类三违的去重人数
+        function calcZhongmeiPersonCount() {
+            // 筛选中煤三建的所有数据
+            let zmData = allOriginData.filter(item => isZhongmeiReport(item));
+            // 典型三违：去重姓名
+            let typicalNames = [...new Set(
+                zmData.filter(item => formatText(item.三违性质).includes("典型")).map(item => item.姓名)
+            )];
+            // 较严重三违：去重姓名
+            let seriousNames = [...new Set(
+                zmData.filter(item => formatText(item.三违性质).includes("较严重")).map(item => item.姓名)
+            )];
+            // 危险作业：去重姓名
+            let dangerNames = [...new Set(
+                zmData.filter(item => formatText(item.三违性质).includes("危险作业")).map(item => item.姓名)
+            )];
+            
+            return {
+                typical: typicalNames.length,
+                serious: seriousNames.length,
+                danger: dangerNames.length
+            };
+        }
         function calcTotalStat() {
             let list = allOriginData;
             let total = list.length;
@@ -500,13 +525,12 @@
             let danger = list.filter(x => formatText(x.三违性质).includes("危险作业")).length;
             return {total, mine, coal, typical, serious, danger};
         }
-
-        // 每日矿查三违统计
         function calcDailyMineStat() {
             let dailyMap = {};
             allOriginData.forEach(item => {
                 if(isMineDailyReport(item)){
-                    let day = item.违章日期;
+                    // 改为按【报送日期】统计每日条数
+                    let day = item.报送日期;
                     if(!day) return;
                     dailyMap[day] = (dailyMap[day] || 0) + 1;
                 }
@@ -518,20 +542,18 @@
             });
             return html || "<div class='stat-item'>暂无每日矿查三违数据</div>";
         }
-
-        // 筛选后数据
         function getFilterData() {
             let start = document.getElementById("startDate").value;
             let end = document.getElementById("endDate").value;
             let list = [...allOriginData];
-            if (start) list = list.filter(item => item.违章日期 >= start);
-            if (end) list = list.filter(item => item.违章日期 <= end);
+            // 日期筛选改为依据【报送日期】
+            if (start) list = list.filter(item => item.报送日期 >= start);
+            if (end) list = list.filter(item => item.报送日期 <= end);
             if (selectedTeams.length > 0) {
                 list = list.filter(item => selectedTeams.some(team => formatText(item.班别).includes(team.replace("队",""))));
             }
             return list;
         }
-
         function calcStat(list) {
             let total = list.length;
             let mine = list.filter(x => isMineDailyReport(x)).length;
@@ -549,7 +571,6 @@
             let t = formatText(type || "");
             return t.includes("典型") || t.includes("较严重") || t.includes("危险作业");
         }
-
         document.querySelectorAll(".tab-item").forEach(tab => {
             tab.addEventListener("click", function () {
                 document.querySelectorAll(".tab-item").forEach(t => t.classList.remove("active"));
@@ -559,7 +580,6 @@
                 refreshAllData();
             });
         });
-
         function parseRowByTemplate(row) {
             return {
                 序号: String(row[0] || ""),
@@ -582,13 +602,11 @@
                 查处人: String(row[17] || "")
             };
         }
-
         document.getElementById("fileUpload").addEventListener("change", function (e) {
             const files = e.target.files;
             if (files.length === 0) return;
             let totalAdd = 0;
             let fileIndex = 0;
-
             function readFile(file) {
                 const reader = new FileReader();
                 reader.onload = function (ev) {
@@ -596,16 +614,12 @@
                         const wb = XLSX.read(ev.target.result, { type: "binary" });
                         const sheet = wb.Sheets[wb.SheetNames[0]];
                         const jsonArr = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-
-                        // 跳过表头（前2行）+ 过滤空行/无效行
                         for (let i = 2; i < jsonArr.length; i++) {
                             const row = jsonArr[i];
                             if (!Array.isArray(row) || row.length < 10) continue;
-                            // 过滤无效行：姓名为空、班组为空的行不统计
                             let hasTeam = row.some(cell => String(cell).includes("711") || String(cell).includes("712") || String(cell).includes("715") || String(cell).includes("716"));
                             let hasName = String(row[4]).trim() !== "";
                             if (!hasTeam && !hasName) continue;
-
                             let newItem = parseRowByTemplate(row);
                             allOriginData.push(newItem);
                             totalAdd++;
@@ -629,7 +643,6 @@
             readFile(files[0]);
             this.value = "";
         });
-
         document.getElementById("teamSelectBtn").addEventListener("click", function() {
             document.getElementById("teamSelectDropdown").style.display = 
                 document.getElementById("teamSelectDropdown").style.display === "block" ? "none" : "block";
@@ -656,11 +669,16 @@
                 document.getElementById("teamSelectDropdown").style.display = "none";
             }
         });
-
         function refreshAllData() {
             let data = getFilterData();
             let totalStat = calcTotalStat();
             let dailyMineHtml = calcDailyMineStat();
+            // 新增：更新中煤三建人数统计
+            let zmCount = calcZhongmeiPersonCount();
+            document.getElementById("zmTypicalCount").textContent = zmCount.typical;
+            document.getElementById("zmSeriousCount").textContent = zmCount.serious;
+            document.getElementById("zmDangerCount").textContent = zmCount.danger;
+            // 原有渲染逻辑
             renderDaily(data, totalStat, dailyMineHtml);
             renderWeek(data);
             renderMonth(data);
@@ -669,7 +687,6 @@
             renderMonthCompare(data);
             renderTotalSummary(data);
         }
-
         function renderDaily(data, totalStat, dailyMineHtml) {
             document.getElementById("dailyStat").innerHTML = `
                 <div class="stat-item">全部三违总数：<span>${totalStat.total}</span></div>
@@ -680,7 +697,6 @@
                 <div class="stat-item">危险作业：<span>${totalStat.danger}</span></div>
             `;
             document.getElementById("dailyMineStat").innerHTML = dailyMineHtml;
-
             let totalPage = Math.ceil(data.length / PAGE_SIZE);
             let start = (pageIndex.daily - 1) * PAGE_SIZE;
             let pageData = data.slice(start, start + PAGE_SIZE);
@@ -720,7 +736,6 @@
             `;
             document.getElementById("dailyPage").innerHTML = pageHtml;
         }
-
         function renderWeek(data) {
             let stat = calcStat(data);
             document.getElementById("weekStat").innerHTML = `
@@ -731,7 +746,8 @@
             `;
             let group = {};
             data.forEach(item => {
-                let w = getYearWeek(item.违章日期);
+                // 周分组依据【报送日期】
+                let w = getYearWeek(item.报送日期);
                 let team = TEAM_LIST.find(t => formatText(item.班别).includes(t.replace("队",""))) || "其他";
                 let key = w + "|" + team;
                 (group[key] || (group[key] = [])).push(item);
@@ -748,7 +764,6 @@
             });
             document.getElementById("weekBody").innerHTML = html || `<tr><td colspan="6" class="empty-tip">暂无数据</td></tr>`;
         }
-
         function renderMonth(data) {
             let stat = calcStat(data);
             document.getElementById("monthStat").innerHTML = `
@@ -759,7 +774,8 @@
             `;
             let group = {};
             data.forEach(item => {
-                let m = getYearMonth(item.违章日期);
+                // 月分组依据【报送日期】
+                let m = getYearMonth(item.报送日期);
                 let team = TEAM_LIST.find(t => formatText(item.班别).includes(t.replace("队",""))) || "其他";
                 let key = m + "|" + team;
                 (group[key] || (group[key] = [])).push(item);
@@ -776,7 +792,6 @@
             });
             document.getElementById("monthBody").innerHTML = html || `<tr><td colspan="6" class="empty-tip">暂无数据</td></tr>`;
         }
-
         function renderQuarter(data) {
             let stat = calcStat(data);
             document.getElementById("quarterStat").innerHTML = `
@@ -787,7 +802,8 @@
             `;
             let group = {};
             data.forEach(item => {
-                let q = getYearQuarter(item.违章日期);
+                // 季度分组依据【报送日期】
+                let q = getYearQuarter(item.报送日期);
                 let team = TEAM_LIST.find(t => formatText(item.班别).includes(t.replace("队",""))) || "其他";
                 let key = q + "|" + team;
                 (group[key] || (group[key] = [])).push(item);
@@ -804,7 +820,6 @@
             });
             document.getElementById("quarterBody").innerHTML = html || `<tr><td colspan="6" class="empty-tip">暂无数据</td></tr>`;
         }
-
         function renderYear(data) {
             let stat = calcStat(data);
             document.getElementById("yearStat").innerHTML = `
@@ -815,7 +830,8 @@
             `;
             let group = {};
             data.forEach(item => {
-                let y = getYear(item.违章日期);
+                // 年度分组依据【报送日期】
+                let y = getYear(item.报送日期);
                 let team = TEAM_LIST.find(t => formatText(item.班别).includes(t.replace("队",""))) || "其他";
                 let key = y + "|" + team;
                 (group[key] || (group[key] = [])).push(item);
@@ -832,7 +848,6 @@
             });
             document.getElementById("yearBody").innerHTML = html || `<tr><td colspan="6" class="empty-tip">暂无数据</td></tr>`;
         }
-
         function renderMonthCompare(data) {
             let stat = calcStat(data);
             document.getElementById("compareStat").innerHTML = `
@@ -842,7 +857,8 @@
             `;
             let group = {};
             data.forEach(item => {
-                let m = getYearMonth(item.违章日期);
+                // 月度对比分组依据【报送日期】
+                let m = getYearMonth(item.报送日期);
                 (group[m] || (group[m] = [])).push(item);
             });
             let html = "";
@@ -855,7 +871,6 @@
             });
             document.getElementById("compareBody").innerHTML = html || `<tr><td colspan="8" class="empty-tip">暂无数据</td></tr>`;
         }
-
         function renderTotalSummary(data) {
             let allStat = calcStat(data);
             document.getElementById("summaryStat").innerHTML = `
@@ -878,7 +893,6 @@
             });
             document.getElementById("summaryBody").innerHTML = html;
         }
-
         function exportCurrentTable() {
             let activeTab = document.querySelector(".tab-item.active").dataset.tab;
             let data = getFilterData();
@@ -896,35 +910,35 @@
                     break;
                 case "week":
                     fileName = "每周汇总.xlsx";
-                    let wg={};data.forEach(i=>{let k=getYearWeek(i.违章日期)+"|"+i.班别;wg[k]||(wg[k]=[]);wg[k].push(i);});
+                    let wg={};data.forEach(i=>{let k=getYearWeek(i.报送日期)+"|"+i.班别;wg[k]||(wg[k]=[]);wg[k].push(i);});
                     Object.keys(wg).forEach(k=>{let [w,t]=k.split("|");let s=calcStat(wg[k]);
                         exportArr.push({"周次":w,"班别":t,"总条数":s.total,"典型三违":s.typical,"较严重三违":s.serious,"危险作业":s.danger});
                     });
                     break;
                 case "month":
                     fileName = "每月汇总.xlsx";
-                    let mg={};data.forEach(i=>{let k=getYearMonth(i.违章日期)+"|"+i.班别;mg[k]||(mg[k]=[]);mg[k].push(i);});
+                    let mg={};data.forEach(i=>{let k=getYearMonth(i.报送日期)+"|"+i.班别;mg[k]||(mg[k]=[]);mg[k].push(i);});
                     Object.keys(mg).forEach(k=>{let [m,t]=k.split("|");let s=calcStat(mg[k]);
                         exportArr.push({"月份":m,"班别":t,"总条数":s.total,"典型三违":s.typical,"较严重三违":s.serious,"危险作业":s.danger});
                     });
                     break;
                 case "quarter":
                     fileName = "每季汇总.xlsx";
-                    let qg={};data.forEach(i=>{let k=getYearQuarter(i.违章日期)+"|"+i.班别;qg[k]||(qg[k]=[]);qg[k].push(i);});
+                    let qg={};data.forEach(i=>{let k=getYearQuarter(i.报送日期)+"|"+i.班别;qg[k]||(qg[k]=[]);qg[k].push(i);});
                     Object.keys(qg).forEach(k=>{let [q,t]=k.split("|");let s=calcStat(qg[k]);
                         exportArr.push({"季度":q,"班别":t,"总条数":s.total,"典型三违":s.typical,"较严重三违":s.serious,"危险作业":s.danger});
                     });
                     break;
                 case "year":
                     fileName = "每年汇总.xlsx";
-                    let yg={};data.forEach(i=>{let k=getYear(i.违章日期)+"|"+i.班别;yg[k]||(yg[k]=[]);yg[k].push(i);});
+                    let yg={};data.forEach(i=>{let k=getYear(i.报送日期)+"|"+i.班别;yg[k]||(yg[k]=[]);yg[k].push(i);});
                     Object.keys(yg).forEach(k=>{let [y,t]=k.split("|");let s=calcStat(yg[k]);
                         exportArr.push({"年份":y,"班别":t,"总条数":s.total,"典型三违":s.typical,"较严重三违":s.serious,"危险作业":s.danger});
                     });
                     break;
                 case "monthCompare":
                     fileName = "矿中煤月度对比.xlsx";
-                    let cg={};data.forEach(i=>{let m=getYearMonth(i.违章日期);cg[m]||(cg[m]=[]);cg[m].push(i);});
+                    let cg={};data.forEach(i=>{let m=getYearMonth(i.报送日期);cg[m]||(cg[m]=[]);cg[m].push(i);});
                     Object.keys(cg).sort().reverse().forEach(m=>{let s=calcStat(cg[m]);
                         exportArr.push({"统计月份":m,"全部三违总数":s.total,"矿查三违总数":s.mine,"中煤三建三违总数":s.coal,"711队":s.t711,"712队":s.t712,"715队":s.t715,"716队":s.t716});
                     });
@@ -944,7 +958,6 @@
             XLSX.utils.book_append_sheet(wb,"数据",ws);
             XLSX.writeFile(wb,fileName);
         }
-
         function clearAllData() {
             if(!confirm("确定清空所有数据？不可恢复！")) return;
             allOriginData = [];
@@ -953,7 +966,6 @@
             refreshAllData();
             alert("数据已清空");
         }
-
         window.onload = function () {
             let cache = localStorage.getItem("sanweiData");
             if(cache) allOriginData = JSON.parse(cache);
